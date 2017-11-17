@@ -19,6 +19,10 @@ The training was done on Amazon's AWS with a g3-x4large instance (Nvidia Tesla M
 set to 12 to provide reasonable speed and avoid running of memory. And the training epoch was set to 30 as it produced
 reasonable results.
 
+Here are two images from running the inference thtough the trained FCN.
+
+![png](images/um_000007.png)
+![png](images/uu_000004.png)
 
 ### Setup
 ##### Frameworks and Packages
@@ -33,6 +37,12 @@ Download the [Kitti Road dataset](http://www.cvlibs.net/datasets/kitti/eval_road
 ### Start
 
 ##### Run
+
+Run the following command to get pretrianed VGG model and training data for the project:
+```
+setup_data.sh
+```
+
 Run the following command to run the project:
 ```
 python main.py
