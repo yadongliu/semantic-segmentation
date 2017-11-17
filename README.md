@@ -19,7 +19,7 @@ The training was done on Amazon's AWS with a g3-x4large instance (Nvidia Tesla M
 set to 12 to provide reasonable speed and avoid running of memory. And the training epoch was set to 30 as it produced
 reasonable results.
 
-Here are two images from running the inference thtough the trained FCN.
+Here are two images from running the inference through the trained FCN.
 
 ![png](images/um_000007.png)
 ![png](images/uu_000004.png)
