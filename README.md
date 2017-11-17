@@ -2,6 +2,24 @@
 ### Introduction
 In this project, you'll label the pixels of a road in images using a Fully Convolutional Network (FCN).
 
+The idea of FCN was first proposed in a paper titled "Fully Convolutional Networks for Semantic Segmentation"
+by Berkeley Vision Lab. Here is a [link to the paper](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf). 
+
+### Implementation
+Full implementation of the FCN is contained in a single file `main.py` while `helper.py` and `project_tests.py` 
+provides some helper functions such as test utils and batch generator. 
+
+
+The hardest part to understand and implement FCN is to build the skip layers. Even though Tensorflow already
+provides a handy functions tf.layers.conv2d_transpose(), it took me a while to figure out what values
+each parameter will take. 
+
+### Training
+The training was done on Amazon's AWS with a g3-x4large instance (Nvidia Tesla M60 with 8GB memory). Batch size was
+set to 12 to provide reasonable speed and avoid running of memory. And the training epoch was set to 30 as it produced
+reasonable results.
+
+
 ### Setup
 ##### Frameworks and Packages
 Make sure you have the following is installed:
@@ -13,9 +31,7 @@ Make sure you have the following is installed:
 Download the [Kitti Road dataset](http://www.cvlibs.net/datasets/kitti/eval_road.php) from [here](http://www.cvlibs.net/download.php?file=data_road.zip).  Extract the dataset in the `data` folder.  This will create the folder `data_road` with all the training a test images.
 
 ### Start
-##### Implement
-Implement the code in the `main.py` module indicated by the "TODO" comments.
-The comments indicated with "OPTIONAL" tag are not required to complete.
+
 ##### Run
 Run the following command to run the project:
 ```
