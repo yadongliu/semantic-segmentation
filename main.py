@@ -4,7 +4,7 @@ import helper
 import warnings
 from distutils.version import LooseVersion
 import project_tests as tests
-
+import numpy as np
 
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
@@ -43,7 +43,7 @@ def load_vgg(sess, vgg_path):
     layer7 = tf.get_default_graph().get_tensor_by_name(vgg_layer7_out_tensor_name)
 
     return input_tensor, prob_tensor, layer3, layer4, layer7
-tests.test_load_vgg(load_vgg, tf)
+#tests.test_load_vgg(load_vgg, tf)
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
@@ -55,24 +55,23 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    kernel_size = 1
-    stride = 1
-    layer7_conv = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1, 
-        kernel_initializer= tf.random_normal_initializer(stddev=0.0005),
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-    layer7_up = tf.layers.conv2d_transpose(layer7_conv, num_classes, (32, 32), (32, 32),
-        kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
 
-    layer3_up = tf.layers.conv2d_transpose(vgg_layer3_out, num_classes, (8, 8), (8, 8),
-        kernel_initializer= tf.random_normal_initializer(stddev=0.0005),
-        kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
-    layer4_up = tf.layers.conv2d_transpose(vgg_layer4_out, num_classes, (16, 16), (16, 16),
-        kernel_initializer= tf.random_normal_initializer(stddev=0.0005),
-        kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
+    layer7_up = tf.layers.conv2d_transpose(vgg_layer7_out, 512, (2, 2), (2, 2),
+        kernel_initializer= tf.random_normal_initializer(stddev=0.0001),
+        kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3), name="layer7_2x")
 
-    result = tf.add(tf.add(layer3_up, layer4_up), layer7_up)
-    return result
-tests.test_layers(layers)
+    layer4_sum = tf.add(vgg_layer4_out, layer7_up)
+    layer4_up = tf.layers.conv2d_transpose(layer4_sum, 256, (2, 2), (2, 2),
+        kernel_initializer= tf.random_normal_initializer(stddev=0.0001),
+        kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3), name="layer4_2x")
+
+    layer3_sum = tf.add(vgg_layer3_out, layer4_up)
+    layer3_up = tf.layers.conv2d_transpose(layer3_sum, num_classes, (8, 8), (8, 8),
+        kernel_initializer= tf.random_normal_initializer(stddev=0.0001),
+        kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3), name="layer3_8x")
+
+    return layer3_up 
+#tests.test_layers(layers)
 
 
 def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
@@ -125,14 +124,14 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
                 input_image: images, keep_prob: 0.5, learning_rate: 0.001})
             print("Loss at step ", step, " :", cross_loss)
 
-tests.test_train_nn(train_nn)
+#tests.test_train_nn(train_nn)
 
 
-def run():
+def run(inference = True):
     num_classes = 2
     image_shape = (160, 576)
-    batch_size = 12
-    epochs = 30
+    batch_size = 8
+    epochs = 50
     data_dir = './data'
     runs_dir = './runs'
     # tests.test_for_kitti_dataset(data_dir)
@@ -174,19 +173,30 @@ def run():
 
         print(tf.trainable_variables())
 
+        """
+        Figuring out the shape of each layers
+        """
+        sess.run(tf.global_variables_initializer())
+        test_images = ['data/data_road/testing/image_2/um_000000.png', 'data/data_road/testing/image_2/um_000000.png']
+        input_images = helper.gen_input_tensor(test_images, image_shape)
+        l3, l4, l7, fcn_out = sess.run([layer3, layer4, layer7, fcnlayer_out], feed_dict={input_tensor: input_images, keep_prob: 0.5})
+        print('layer3 Shape should be (?, 20, 72, 256), actual: ', np.shape(l3))
+        print('layer4 Shape should be (?, 10, 36, 512), actual: ', np.shape(l4))
+        print('layer7 Shape should be (?, 5, 18, 4096), actual: ', np.shape(l7))
+        print('fcn_out Shape should be (?, 160, 576, 2), actual: ', np.shape(fcn_out))
+
         # TODO: Train NN using the train_nn function
-        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_tensor,
-                 correct_label, keep_prob, learning_rate)
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_tensor, correct_label, keep_prob, learning_rate)
 
-        saver = tf.train.Saver()
-        save_path = saver.save(sess, "model.ckpt")
-        print("Model saved in file: %s" % save_path)
-
-        # TODO: Save inference data using helper.save_inference_samples
-        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_tensor)
+        if inference: 
+            saver = tf.train.Saver()
+            save_path = saver.save(sess, "model.ckpt")
+            print("Model saved in file: %s" % save_path)
+            print("Generating inference samples ... ")
+            helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_tensor)
 
         # OPTIONAL: Apply the trained model to a video
 
 
 if __name__ == '__main__':
-    run()
+    run(True)

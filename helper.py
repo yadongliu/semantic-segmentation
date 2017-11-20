@@ -97,6 +97,12 @@ def gen_batch_function(data_folder, image_shape):
             yield np.array(images), np.array(gt_images)
     return get_batches_fn
 
+def gen_input_tensor(image_paths, image_shape):
+    images = []
+    for image_path in image_paths:
+        image = scipy.misc.imresize(scipy.misc.imread(image_path), image_shape)
+        images.append(image)
+    return np.array(images)
 
 def gen_test_output(sess, logits, keep_prob, image_pl, data_folder, image_shape):
     """

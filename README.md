@@ -24,7 +24,7 @@ Here are two images from running the inference through the trained FCN.
 ![png](images/um_000007.png)
 ![png](images/uu_000004.png)
 
-A list of all test images from inference can be accessed here: [saved inference samples](https://github.com/yadongliu/deep-vision-data/tree/master/semantic-segmentation/runs/1510818895.8553534)
+A list of all test images from inference can be accessed here: [saved inference samples](https://github.com/yadongliu/deep-vision-data/tree/master/semantic-segmentation/1511132798.1599922)
 
 ### Setup
 ##### Frameworks and Packages
