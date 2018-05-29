@@ -190,7 +190,7 @@ def run(inference = True):
 
         if inference: 
             saver = tf.train.Saver()
-            save_path = saver.save(sess, "model.ckpt")
+            save_path = saver.save(sess, "./model.ckpt")
             print("Model saved in file: %s" % save_path)
             print("Generating inference samples ... ")
             helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_tensor)
